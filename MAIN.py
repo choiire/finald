@@ -10,8 +10,8 @@ with open('/home/pi/status.pickle', 'wb') as f:
 app_url = 'https://pi147-1d4b25580c95.herokuapp.com/'
 
 #relay
-relay_1 = 6 #pump
-relay_2 = 13 #solenid
+relay_1 = 13 #pump
+relay_2 = 6 #solenid
 relay_3 = 19 #fan
 
 GPIO.setwarnings(False)
@@ -20,19 +20,9 @@ GPIO.setup(relay_1,GPIO.OUT)
 GPIO.setup(relay_2,GPIO.OUT)
 GPIO.setup(relay_3,GPIO.OUT)
 
-GPIO.output(relay_1,0)
+GPIO.output(relay_1,0) #pump off
 GPIO.output(relay_2,0)
 GPIO.output(relay_3,0)
-
-def RunReceivepy():
-    Send_cmd = "/home/pi/RECEIVE.py"
-    Send_cmd_reculsive = [sys.executable, Send_cmd, '-u', 'python3']
-    global pS
-    pS = subprocess.Popen(Send_cmd_reculsive)#, stdout=subprocess.PIPE, universal_newlines=True, text=True)
-
-def KillReceivepy():
-    pS.kill()
-    pS.terminate()
     
 def Pump(a):
     if a == 0:
@@ -74,8 +64,8 @@ def Getstatus():
 
 
 if __name__ == '__main__':
-
-    #RunReceivepy()
+    
+    
     while 1:
         
         data = Getstatus()
@@ -84,14 +74,18 @@ if __name__ == '__main__':
         
         if (int(data["fire"]) == 0) & (int(data["sonic"]) < 20):
             Pump(1)
-            time.sleep(0.01)
             Solenoid(1)
-            time.sleep(0.01)
+            time.sleep(0.5)
+            Solenoid(0)
+            time.sleep(3)
+            Pump(0)
         else:
             Pump(0)
             Solenoid(0)
         if (int(data["co2"]) == 5000):
             Fan(1)
+            time.sleep(3)
+            Fan(0)
         else:
             Fan(0)
-            
+    
